@@ -20,16 +20,70 @@ const rooms = new Map();
 
 // Constants
 const QUESTIONS = [
+  // --- CLASSIC 'WHO IS' ---
   "Who is the better cook?",
   "Who is more likely to get lost?",
-  "What is Player 1's dream destination?",
-  "What is Player 2's favorite food?",
   "Who takes longer to get ready?",
-  "Who said 'I love you' first?",
-  "What is Player 1's biggest pet peeve?",
   "Who is the funnier one?",
-  "What is Player 2's favorite movie?",
-  "Who is more organized?"
+  "Who is more organized?",
+  "Who is more stubborn?",
+  "Who is the bigger baby when they are sick?",
+  "Who is more likely to survive a zombie apocalypse?",
+  "Who is the better driver?",
+  "Who spends more money on food?",
+  "Who is more scared of spiders or bugs?",
+  "Who has the better fashion sense?",
+  "Who is more likely to drop their phone?",
+  "Who is the better dancer?",
+  "Who is more likely to become famous?",
+  "Who is the messier eater?",
+  "Who is more likely to laugh at a serious moment?",
+  "Who checks themselves in the mirror more?",
+  "Who screams louder on a rollercoaster?",
+  
+  // --- RELATIONSHIP & ROMANCE ---
+  "Who said 'I love you' first?",
+  "Who made the first move?",
+  "Who is the more romantic one?",
+  "Who is more clingy?",
+  "Who gives the best gifts?",
+  "Who is more jealous?",
+  "Who apologizes first after a fight?",
+  "Who remembers anniversaries better?",
+  "Who is more likely to start an argument?",
+  "Who steals the covers/blanket at night?",
+  "Who is the better kisser?",
+  "Who needs more attention?",
+  
+  // --- STUDENT / LIFESTYLE VIBES ---
+  "Who is more likely to sleep in class?",
+  "Who stresses more about exams?",
+  "Who is always late to lectures?",
+  "Who spends more time on TikTok/Instagram?",
+  "Who has the better music taste?",
+  "Who is more likely to forget their wallet?",
+  "Who sends the most memes?",
+  "Who is more likely to fall asleep during a movie?",
+  "Who takes more selfies?",
+  "Who is more addicted to their phone?",
+  "Who is likely to be a billionaire first?",
+  
+  // --- DEEP / PERSONAL ---
+  "Who is more emotional?",
+  "Who is better at keeping secrets?",
+  "Who is the bigger risk-taker?",
+  "Who is more optimistic about the future?",
+  "Who handles stress better?",
+  "Who is the social butterfly?",
+  "Who is more likely to cry at a sad movie?",
+  "Who has the crazier family?",
+  
+  // --- RANDOM FUN ---
+  "If we were arrested, who would it be for?",
+  "Who would die first in a horror movie?",
+  "Who talks more in their sleep?",
+  "Who sings better in the shower?",
+  "Who is more likely to adopt a stray animal?"
 ];
 
 io.on('connection', (socket) => {
