@@ -95,4 +95,4 @@ const Lobby = ({ socket, onJoin }) => {
     );
 };
 
-export default Lobby;https://github.com/Whitekid123/relationship-sync
+export default Lobby;
