@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { io } from 'socket.io-client';
 
-const SERVER_URL = 'http://localhost:3001';
+// 👇 THIS IS THE CHANGE
+const SERVER_URL = 'https://relationship-sync-2.onrender.com'; 
 
 export const useSocket = () => {
     const [socket, setSocket] = useState(null);
