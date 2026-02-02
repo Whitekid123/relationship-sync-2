@@ -20,6 +20,9 @@ function App() {
     const [question, setQuestion] = useState('');
     const [round, setRound] = useState(0);
     const [results, setResults] = useState(null);
+    
+    // NEW: Score / Streak State
+    const [score, setScore] = useState(0);
 
     useEffect(() => {
         if (!socket) return;
@@ -27,6 +30,7 @@ function App() {
         // Room Created
         socket.on('room_created', (code) => {
             setRoomCode(code);
+            setScore(0); // Reset score on new game
             toast.success(`Room Created! Code: ${code}`);
         });
 
@@ -34,13 +38,35 @@ function App() {
         socket.on('game_started', ({ question, round }) => {
             setQuestion(question);
             setRound(round);
+            setScore(0); // Reset score on game start
             setGameState(GAME_STATES.PLAYING);
             toast.success('Game Started! Good Luck!');
         });
 
-        // Round Results
+        // Round Results (THIS IS WHERE THE MAGIC HAPPENS)
         socket.on('round_results', (data) => {
             setResults(data);
+
+            if (data.match) {
+                // 1. INCREASE STREAK
+                setScore(prev => prev + 1);
+
+                // 2. VIBRATE (Mobile Only) - 200ms buzz
+                if (navigator.vibrate) navigator.vibrate(200);
+
+                // 3. PLAY SOUND (Optional)
+                new Audio('/sounds/match.mp3').play().catch(() => {}); 
+            } else {
+                // 1. RESET STREAK (Challenge Mode!)
+                setScore(0);
+
+                // 2. VIBRATE - Double buzz for error
+                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+                // 3. PLAY SOUND (Optional)
+                new Audio('/sounds/fail.mp3').play().catch(() => {});
+            }
+
             setGameState(GAME_STATES.RESULTS);
         });
 
@@ -67,6 +93,7 @@ function App() {
             setGameState(GAME_STATES.LOBBY);
             setRoomCode('');
             setQuestion('');
+            setScore(0);
         });
 
         return () => {
@@ -102,7 +129,6 @@ function App() {
                 {gameState === GAME_STATES.LOBBY && (
                     <Lobby 
                         socket={socket} 
-                        // FIX 1: Save the code when joining!
                         onJoin={(code) => setRoomCode(code)} 
                     />
                 )}
@@ -111,9 +137,10 @@ function App() {
                     <GameRoom
                         socket={socket}
                         roomCode={roomCode}
-                        // FIX 2: Correct spelling "question"
-                        question={question} 
+                        question={question}
                         round={round}
+                        // Pass score so we can see it while playing!
+                        score={score} 
                         onAnswerSubmit={() => { }}
                     />
                 )}
@@ -122,6 +149,8 @@ function App() {
                     <ResultCard
                         results={results}
                         round={round}
+                        // Pass score to show the streak
+                        score={score}
                         onNext={handleNextRound}
                     />
                 )}

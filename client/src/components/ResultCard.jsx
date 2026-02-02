@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { BadgeCheck, XCircle, ArrowRight } from 'lucide-react';
+import { BadgeCheck, XCircle, ArrowRight, Flame } from 'lucide-react';
 
-const ResultCard = ({ results, round, onNext }) => {
+const ResultCard = ({ results, round, onNext, score }) => {
     const { answers, match } = results;
     const user1 = answers[0];
     const user2 = answers[1];
@@ -45,8 +45,20 @@ const ResultCard = ({ results, round, onNext }) => {
         <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="max-w-2xl mx-auto w-full"
+            className="max-w-2xl mx-auto w-full relative"
         >
+            {/* NEW: STREAK BADGE */}
+            <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-20">
+                <motion.div 
+                    initial={{ y: -20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    className="bg-orange-500 text-white px-6 py-2 rounded-full font-bold shadow-lg flex items-center gap-2 border-4 border-white"
+                >
+                    <Flame className={`w-5 h-5 ${score > 2 ? 'animate-bounce' : ''}`} fill="currentColor" />
+                    STREAK: {score}
+                </motion.div>
+            </div>
+
             <div className={`glass p-8 text-center border-t-8 ${match ? 'border-green-400' : 'border-red-400'}`}>
 
                 <div className="mb-8">
