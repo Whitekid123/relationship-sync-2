@@ -18,73 +18,76 @@ const io = new Server(server, {
 // Game State
 const rooms = new Map();
 
-// Constants
-const QUESTIONS = [
-  // --- CLASSIC 'WHO IS' ---
-  "Who is the better cook?",
-  "Who is more likely to get lost?",
-  "Who takes longer to get ready?",
-  "Who is the funnier one?",
-  "Who is more organized?",
-  "Who is more stubborn?",
-  "Who is the bigger baby when they are sick?",
-  "Who is more likely to survive a zombie apocalypse?",
-  "Who is the better driver?",
-  "Who spends more money on food?",
-  "Who is more scared of spiders or bugs?",
-  "Who has the better fashion sense?",
-  "Who is more likely to drop their phone?",
-  "Who is the better dancer?",
-  "Who is more likely to become famous?",
-  "Who is the messier eater?",
-  "Who is more likely to laugh at a serious moment?",
-  "Who checks themselves in the mirror more?",
-  "Who screams louder on a rollercoaster?",
-  
-  // --- RELATIONSHIP & ROMANCE ---
-  "Who said 'I love you' first?",
-  "Who made the first move?",
-  "Who is the more romantic one?",
-  "Who is more clingy?",
-  "Who gives the best gifts?",
-  "Who is more jealous?",
-  "Who apologizes first after a fight?",
-  "Who remembers anniversaries better?",
-  "Who is more likely to start an argument?",
-  "Who steals the covers/blanket at night?",
-  "Who is the better kisser?",
-  "Who needs more attention?",
-  
-  // --- STUDENT / LIFESTYLE VIBES ---
-  "Who is more likely to sleep in class?",
-  "Who stresses more about exams?",
-  "Who is always late to lectures?",
-  "Who spends more time on TikTok/Instagram?",
-  "Who has the better music taste?",
-  "Who is more likely to forget their wallet?",
-  "Who sends the most memes?",
-  "Who is more likely to fall asleep during a movie?",
-  "Who takes more selfies?",
-  "Who is more addicted to their phone?",
-  "Who is likely to be a billionaire first?",
-  
-  // --- DEEP / PERSONAL ---
-  "Who is more emotional?",
-  "Who is better at keeping secrets?",
-  "Who is the bigger risk-taker?",
-  "Who is more optimistic about the future?",
-  "Who handles stress better?",
-  "Who is the social butterfly?",
-  "Who is more likely to cry at a sad movie?",
-  "Who has the crazier family?",
-  
-  // --- RANDOM FUN ---
-  "If we were arrested, who would it be for?",
-  "Who would die first in a horror movie?",
-  "Who talks more in their sleep?",
-  "Who sings better in the shower?",
-  "Who is more likely to adopt a stray animal?"
+// --- THE INFINITE QUESTION ENGINE ---
+
+// 1. The Building Blocks
+const ACTIONS = [
+  "make a scene", "fall asleep", "drop their phone", "make friends", 
+  "get arrested", "cry", "laugh uncontrollably", "forget their wallet",
+  "start dancing", "trip over nothing", "sing loudly", "eat someone else's food",
+  "talk to strangers", "get lost", "break something expensive", "adopt a stray animal",
+  "send a risky text", "butt dial their ex", "spill a drink", "get kicked out"
 ];
+
+const CONTEXTS = [
+  "in a church", "during a serious meeting", "at a funeral", "on a first date",
+  "while driving", "in the shower", "during a horror movie", "at a library",
+  "when they are drunk", "when they are hungry", "in a foreign country",
+  "if they met a celebrity", "during an exam", "at a wedding", "in an elevator"
+];
+
+const SKILLS = [
+  "cooking", "lying", "saving money", "directions/navigation", "keeping secrets",
+  "waking up early", "cleaning", "video games", "math", "driving", "arguing",
+  "giving massages", "planning trips", "keeping plants alive", "bargaining"
+];
+
+const HABITS = [
+  "on TikTok", "looking in the mirror", "getting ready", "on the toilet",
+  "shopping online", "sleeping", "worrying about nothing", "taking selfies",
+  "deciding what to eat", "stalking exes on Instagram", "complaining"
+];
+
+// 2. The Generator Function
+function generateQuestion(round) {
+  // If we are past round 50, let's make it extra chaotic (Chaos Mode)
+  let isChaosMode = round > 50;
+  
+  // Pick a random template type (0-3)
+  const type = Math.floor(Math.random() * 4); 
+  
+  let question = "";
+
+  if (type === 0) {
+    // TEMPLATE: "Who is more likely to [ACTION]?"
+    const action = ACTIONS[Math.floor(Math.random() * ACTIONS.length)];
+    question = `Who is more likely to ${action}?`;
+  } 
+  else if (type === 1) {
+    // TEMPLATE: "Who would [ACTION] [CONTEXT]?"
+    const action = ACTIONS[Math.floor(Math.random() * ACTIONS.length)];
+    const context = CONTEXTS[Math.floor(Math.random() * CONTEXTS.length)];
+    question = `Who would ${action} ${context}?`;
+  }
+  else if (type === 2) {
+    // TEMPLATE: "Who is better at [SKILL]?"
+    const skill = SKILLS[Math.floor(Math.random() * SKILLS.length)];
+    question = `Who is better at ${skill}?`;
+  }
+  else {
+    // TEMPLATE: "Who spends more time [HABIT]?"
+    const habit = HABITS[Math.floor(Math.random() * HABITS.length)];
+    question = `Who spends more time ${habit}?`;
+  }
+
+  // If Chaos Mode is on, add a spicy prefix sometimes
+  if (isChaosMode && Math.random() > 0.7) {
+    question = "🔥 CHAOS ROUND: " + question;
+  }
+
+  return question; 
+}
+
 
 io.on('connection', (socket) => {
   console.log(`✅ User connected: ${socket.id}`);
@@ -98,47 +101,44 @@ io.on('connection', (socket) => {
 
     rooms.set(roomId, {
       users: [],
-      currentQuestionIndex: 0,
+      // We don't need 'currentQuestionIndex' anymore since we generate new ones!
       answers: {},
       round: 1
     });
 
-    console.log(`🏠 Room Created: ${roomId}`); // DEBUG LOG
+    console.log(`🏠 Room Created: ${roomId}`);
     socket.emit('room_created', roomId);
   });
 
   // Join Room
   socket.on('join_room', (roomId) => {
-    console.log(`📩 Join Request received for Room: ${roomId} from ${socket.id}`); // DEBUG LOG
-
-    // SAFETY CHECK: If roomId is an object, fix it (Common Frontend Bug)
-    if (typeof roomId === 'object') {
-        console.log("⚠️ WARNING: Frontend sent an object instead of a string for Room ID");
-        roomId = roomId.roomId; 
-    }
+    // SAFETY CHECK
+    if (typeof roomId === 'object') roomId = roomId.roomId; 
 
     const room = rooms.get(roomId);
 
     if (!room) {
-      console.log(`❌ Room not found: ${roomId}`); // DEBUG LOG
       socket.emit('error', 'Room not found');
       return;
     }
 
     if (room.users.length >= 2) {
-      console.log(`❌ Room full: ${roomId}`); // DEBUG LOG
       socket.emit('error', 'Room is full');
       return;
     }
 
     room.users.push(socket.id);
     socket.join(roomId);
-    console.log(`👤 User joined. Room count: ${room.users.length}`); // DEBUG LOG
+    console.log(`👤 User joined. Room count: ${room.users.length}`);
 
     if (room.users.length === 2) {
-      console.log(`🚀 GAME STARTING IN ROOM ${roomId}`); // DEBUG LOG
+      console.log(`🚀 GAME STARTING IN ROOM ${roomId}`);
+      
+      // GENERATE RANDOM QUESTION
+      const firstQuestion = generateQuestion(1);
+
       io.to(roomId).emit('game_started', {
-        question: QUESTIONS[room.currentQuestionIndex],
+        question: firstQuestion,
         round: room.round
       });
     } else {
@@ -148,21 +148,17 @@ io.on('connection', (socket) => {
 
   // Submit Answer
   socket.on('submit_answer', ({ roomId, answer }) => {
-    console.log(`📝 Answer received in ${roomId}: "${answer}"`); // DEBUG LOG
+    console.log(`📝 Answer received in ${roomId}: "${answer}"`);
     
     const room = rooms.get(roomId);
-    if (!room) {
-        console.log("❌ Error: Room does not exist when submitting answer");
-        return;
-    }
+    if (!room) return;
 
     room.answers[socket.id] = answer;
 
-    // Notify other user that partner has answered
+    // Notify other user
     socket.to(roomId).emit('partner_answered');
 
     const answerCount = Object.keys(room.answers).length;
-    console.log(`📊 Answers collected: ${answerCount}/2`); // DEBUG LOG
 
     // Check if both answered
     if (answerCount === 2) {
@@ -170,7 +166,7 @@ io.on('connection', (socket) => {
       const answer1 = room.answers[userIds[0]];
       const answer2 = room.answers[userIds[1]];
 
-      console.log("✨ Both answered! Revealing results..."); // DEBUG LOG
+      console.log("✨ Both answered! Revealing results...");
       io.to(roomId).emit('round_results', {
         answers: [
           { userId: userIds[0], answer: answer1 },
@@ -183,16 +179,18 @@ io.on('connection', (socket) => {
 
   // Next Question
   socket.on('next_question', (roomId) => {
-      console.log("⏭️ Next Question requested"); // DEBUG LOG
+      console.log("⏭️ Next Question requested");
       const room = rooms.get(roomId);
       if (!room) return;
 
       room.answers = {};
-      room.currentQuestionIndex = (room.currentQuestionIndex + 1) % QUESTIONS.length;
       room.round += 1;
 
+      // GENERATE NEXT RANDOM QUESTION
+      const nextQ = generateQuestion(room.round);
+
       io.to(roomId).emit('next_round', {
-        question: QUESTIONS[room.currentQuestionIndex],
+        question: nextQ,
         round: room.round
       });
   });
@@ -211,7 +209,6 @@ io.on('connection', (socket) => {
   });
 });
 
-// CHANGED TO PORT 3001 TO AVOID CONFLICTS
 const PORT = process.env.PORT || 3001; 
 server.listen(PORT, () => {
   console.log(`SERVER RUNNING ON PORT ${PORT}`);
